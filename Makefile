@@ -58,10 +58,6 @@ clean-$(1):
 	rm -Rf cd reduction/band_$(1)
 endef
 
-#info-$(1): reduction/band_$(1)/info/$(SNAME)-$(1)_obslist.txt
-#reduction/band_$(1)/info/$(SNAME)-$(1)_obslist.txt:
-#checkdata-$(1): reduction/band_$(1)/info/checkdata.done
-#reduction/band_$(1)/info/checkdata.done:
 
 define Calib_Template
 info-$(1): reduction/band_$(1)/log_info
@@ -81,6 +77,8 @@ endef
 
 #-- end definition of templates ----------------------------------------
 
+#-- definition of groups of tasks --------------------------------------
+
 unpackstr =
 cleanpackstr=
 infostr=
@@ -92,10 +90,15 @@ $(foreach band, $(BANDS), \
     $(eval checkdatastr += $(addsuffix $(band),checkdata-)) \
 )
 
+#-- End of definition of group of tasks --------------------------------
+
 
 export
 
 .PHONY: init erase unpack cleanpack
+.PHONY: info checkdata
+
+
 all:
 
 
@@ -108,8 +111,8 @@ cleanpack : $(cleanpackstr)
 info: $(infostr)
 
 
-
 checkdata: $(checkdatastr)
+
 
 # automatically generate targets for unpacking 
 $(foreach band, $(BANDS), \
