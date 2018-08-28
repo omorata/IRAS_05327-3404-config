@@ -6,11 +6,18 @@
 ##  2018
 ##
 
-# project name, short name and bands to process
+##-- Project info ------------------------------------------------------
+#
+# project name, general prefix, and bands to process
+#
 PRJ_NAME=EVLA-IRAS_05327+3404
 SNAME=iras_05327+3404
 BANDS = X K Q C
+#
+##-- end project info --------------------------------------------------
 
+##-- Directory set-up --------------------------------------------------
+#
 ROOT_DIR=/almalustre/home/omorata
 
 HOME_DIR=$(ROOT_DIR)/$(PRJ_NAME)
@@ -36,6 +43,8 @@ CHECK_DIR=results
 #
 PYTHON_DIR=$(BIN_DIR)/python
 BASH_DIR=$(BIN_DIR)/bash
+#
+##-- End of directory set-up -------------------------------------------
 
 # casa version and name of calibration script
 #
@@ -70,32 +79,86 @@ endef
 # of the data for a given frequency band
 #
 define Calib_Template
+
 info-$(1): reduction/band_$(1)/log_info
+
+
 reduction/band_$(1)/log_info:
 	@sh $(BASH_DIR)/run_calib_step.sh -s "info" -w $(REDC_DIR)/band_$(1) \
             -c cfgfiles/$(1).config -l log_info
 
 
 checkdata-$(1): reduction/band_$(1)/log_checkdata
+
+
 reduction/band_$(1)/log_checkdata:
 	@sh $(BASH_DIR)/run_calib_step.sh -s "checkdata" \
             -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
             -l log_checkdata
 
+
 flagdata-$(1): reduction/band_$(1)/log_flagdata
+
+
 reduction/band_$(1)/log_flagdata:
 	@sh $(BASH_DIR)/run_calib_step.sh -s "flagdata" \
             -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
             -l log_flagdata
 
+
 clean_info-$(1):
 	@cd $(REDC_DIR)/band_$(1)/info && rm -Rf *
 
 
-moveinfo-$(1):
-	echo "moving $(REDC_DIR)/band_$(1)/info to $(RES_DIR)/band_$(1)"
+saveinfo-$(1): reduction/band_$(1)/log_info reduction/band_$(1)/log_checkdata
+	@echo "moving $(REDC_DIR)/band_$(1)/info to $(RES_DIR)/band_$(1)"
 	@mv $(REDC_DIR)/band_$(1)/info $(RES_DIR)/band_$(1)
 
+
+caldata-$(1): reduction/band_$(1)/log_caldata
+
+
+reduction/band_$(1)/log_caldata:  reduction/band_$(1)/log_flagdata
+	@sh $(BASH_DIR)/run_calib_step.sh -s "caldata" \
+            -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
+            -l log_caldata
+
+
+applycal-$(1): reduction/band_$(1)/log_applycal
+
+
+reduction/band_$(1)/log_applycal: reduction/band_$(1)/log_caldata
+	@sh $(BASH_DIR)/run_calib_step.sh -s "applycal" \
+            -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
+            -l log_applycal
+
+
+checkcal-$(1): reduction/band_$(1)/log_checkcal
+
+
+reduction/band_$(1)/log_checkcal:  reduction/band_$(1)/log_applycal
+	@sh $(BASH_DIR)/run_calib_step.sh -s "checkcal" \
+            -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
+            -l log_checkcal
+
+
+savecalinfo-$(1): reduction/band_$(1)/log_checkcal
+	@echo "moving cal"
+	@mv $(REDC_DIR)/band_$(1)/cal/* $(RES_DIR)/band_$(1)/calib_info
+
+
+splits-$(1): reduction/band_$(1)/log_splits
+
+
+reduction/band_$(1)/log_splits: reduction/band_$(1)/log_applycal
+	@sh $(BASH_DIR)/run_calib_step.sh -s "splitdata" \
+            -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
+            -l log_splits
+
+
+savesplits-$(1): splits-$(1)
+	@echo "moving splits"
+	@mv $(REDC_DIR)/band_$(1)/splits/* $(RES_DIR)/band_$(1)/splits
 
 endef
 
@@ -110,7 +173,13 @@ info_list=
 checkdata_list=
 flagdata_list=
 cleaninfo_list=
-moveinfo_list=
+saveinfo_list=
+caldata_list=
+applycal_list=
+checkcal_list=
+savecalinfo_list=
+splits_list=
+savesplits_list=
 
 $(foreach band, $(BANDS), \
     $(eval unpack_list += $(addsuffix $(band),unpack-)) \
@@ -119,7 +188,13 @@ $(foreach band, $(BANDS), \
     $(eval checkdata_list += $(addsuffix $(band),checkdata-)) \
     $(eval flagdata_list += $(addsuffix $(band),flagdata-)) \
     $(eval cleaninfo_list += $(addsuffix $(band),cleaninfo-)) \
-    $(eval moveinfo_list += $(addsuffix $(band),moveinfo-)) \
+    $(eval saveinfo_list += $(addsuffix $(band),saveinfo-)) \
+    $(eval caldata_list += $(addsuffix $(band),caldata-)) \
+    $(eval applycal_list += $(addsuffix $(band),applycal-)) \
+    $(eval checkcal_list += $(addsuffix $(band),checkcal-)) \
+    $(eval savecalinfo_list += $(addsuffix $(band),savecalinfo-)) \
+    $(eval splits_list += $(addsuffix $(band),splits-)) \
+    $(eval savesplits_list += $(addsuffix $(band),savesplits-)) \
 )
 
 #-- End of definition of group of tasks --------------------------------
@@ -128,10 +203,17 @@ $(foreach band, $(BANDS), \
 export
 
 .PHONY: init erase unpack cleanpack clean_info
-.PHONY: info checkdata flagdata
+.PHONY: info checkdata flagdata caldata applycal checkcal splits
+.PHONY: saveinfo savecalinfo savesplits saveall
 
 
-all:
+all: saveall
+
+
+nall: info checkdata checkcal splits
+
+
+saveall: saveinfo savecalinfo savesplits
 
 
 unpack: $(unpack_list)
@@ -149,10 +231,28 @@ cleaninfo: $(cleaninfo_list)
 checkdata: $(checkdata_list)
 
 
-moveinfo: $(moveinfo_list)
+saveinfo: $(saveinfo_list)
 
 
 flagdata: $(flagdata_list)
+
+
+caldata: $(caldata_list)
+
+
+applycal: $(applycal_list)
+
+
+checkcal: $(checkcal_list)
+
+
+savecalinfo: $(savecalinfo_list)
+
+
+splits: $(splits_list)
+
+
+savesplits: $(savesplits_list)
 
 
 # automatically generate targets for unpacking 
@@ -179,6 +279,3 @@ clean: clean_reduction
 clean_reduction:
 	(cd reduction && rm -Rf band*)
 	rm -Rf reduction
-
-
-
