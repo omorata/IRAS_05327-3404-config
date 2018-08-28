@@ -2,3 +2,4 @@
 # flags for targets SB
 #
 #
+spw='2' scan='7~8'
