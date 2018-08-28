@@ -7,5 +7,4 @@ spw='8:0~1'
 spw='12~14:0'
 spw='12~14:15'
 spw='15:13~15'
-spw='12~14' antenna='8' corr='RR'
-
+spw='12~14' antenna='8' correlation='RR'
