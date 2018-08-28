@@ -6,9 +6,9 @@
 ##  2018
 ##
 
+# project name, short name and bands to process
 PRJ_NAME=EVLA-IRAS_05327+3404
 SNAME=iras_05327+3404
-
 BANDS = X K Q C
 
 ROOT_DIR=/almalustre/home/omorata
@@ -32,13 +32,19 @@ EXTREDC_DIR=$(ROOT_DIR)/Reductions/$(PRJ_NAME)
 #
 CHECK_DIR=results
 
-RUNOPT="unattended"
-CASABIN=casa512
-
+# script directories
+#
 PYTHON_DIR=$(BIN_DIR)/python
 BASH_DIR=$(BIN_DIR)/bash
 
+# casa version and name of calibration script
+#
+CASABIN=casa512
 CALIB_SCRIPT=calib_evla.py
+
+# default run option
+#
+RUNOPT="unattended"
 
 #-- define templates ---------------------------------------------------
 
@@ -59,6 +65,10 @@ clean-$(1):
 endef
 
 
+
+# template to define the rules to make all the steps in the calibration
+# of the data for a given frequency band
+#
 define Calib_Template
 info-$(1): reduction/band_$(1)/log_info
 reduction/band_$(1)/log_info:
@@ -71,23 +81,45 @@ reduction/band_$(1)/log_checkdata:
 	@sh $(BASH_DIR)/run_calib_step.sh -s "checkdata" \
             -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
             -l log_checkdata
-endef
 
+flagdata-$(1): reduction/band_$(1)/log_flagdata
+reduction/band_$(1)/log_flagdata:
+	@sh $(BASH_DIR)/run_calib_step.sh -s "flagdata" \
+            -w $(REDC_DIR)/band_$(1) -c cfgfiles/$(1).config \
+            -l log_flagdata
+
+clean_info-$(1):
+	@cd $(REDC_DIR)/band_$(1)/info && rm -Rf *
+
+
+moveinfo-$(1):
+	echo "moving $(REDC_DIR)/band_$(1)/info to $(RES_DIR)/band_$(1)"
+	@mv $(REDC_DIR)/band_$(1)/info $(RES_DIR)/band_$(1)
+
+
+endef
 
 
 #-- end definition of templates ----------------------------------------
 
 #-- definition of groups of tasks --------------------------------------
 
-unpackstr =
-cleanpackstr=
-infostr=
-checkdata=
+unpack_list =
+cleanpack_list=
+info_list=
+checkdata_list=
+flagdata_list=
+cleaninfo_list=
+moveinfo_list=
+
 $(foreach band, $(BANDS), \
-    $(eval unpackstr += $(addsuffix $(band),unpack-)) \
-    $(eval cleanpackstr += $(addsuffix $(band),clean-)) \
-    $(eval infostr += $(addsuffix $(band),info-)) \
-    $(eval checkdatastr += $(addsuffix $(band),checkdata-)) \
+    $(eval unpack_list += $(addsuffix $(band),unpack-)) \
+    $(eval cleanpack_list += $(addsuffix $(band),clean-)) \
+    $(eval info_list += $(addsuffix $(band),info-)) \
+    $(eval checkdata_list += $(addsuffix $(band),checkdata-)) \
+    $(eval flagdata_list += $(addsuffix $(band),flagdata-)) \
+    $(eval cleaninfo_list += $(addsuffix $(band),cleaninfo-)) \
+    $(eval moveinfo_list += $(addsuffix $(band),moveinfo-)) \
 )
 
 #-- End of definition of group of tasks --------------------------------
@@ -95,23 +127,32 @@ $(foreach band, $(BANDS), \
 
 export
 
-.PHONY: init erase unpack cleanpack
-.PHONY: info checkdata
+.PHONY: init erase unpack cleanpack clean_info
+.PHONY: info checkdata flagdata
 
 
 all:
 
 
-unpack: $(unpackstr)
+unpack: $(unpack_list)
 
 
-cleanpack : $(cleanpackstr)
+cleanpack : $(cleanpack_list)
 
 
-info: $(infostr)
+info: $(info_list)
 
 
-checkdata: $(checkdatastr)
+cleaninfo: $(cleaninfo_list)
+
+
+checkdata: $(checkdata_list)
+
+
+moveinfo: $(moveinfo_list)
+
+
+flagdata: $(flagdata_list)
 
 
 # automatically generate targets for unpacking 
