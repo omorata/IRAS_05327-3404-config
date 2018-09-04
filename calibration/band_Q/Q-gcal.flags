@@ -1,3 +1,15 @@
 #
 # flags for gain cal. SB 
 #
+antenna='1' spw='5~7,13~15' timerange='7:11:00~7:13:00'
+antenna='2' timerange='7:27:00~7:27:17'
+antenna='7' spw='2,5~6,13~14'
+antenna='7' spw='3~4,7~12,15~17' timerange='7:00:00~7:03:00'
+antenna='7' spw='3~4,7~12,15~17' timerange='7:33:00~7:35:00'
+antenna='7' spw='3~4,7~12,15~17' timerange='8:00:00~8:03:00'
+antenna='11' spw='34~49'
+antenna='16' spw='18~33' correlation='LL'
+antenna='20' spw='18~21' timerange='7:28:37~7:28:38'
+antenna='20' spw='30~36' timerange='7:28:37~7:28:38'
+antenna='20' spw='45~47' timerange='7:28:37~7:28:38'
+antenna='20' spw='55~58' timerange='7:28:37~7:28:38'

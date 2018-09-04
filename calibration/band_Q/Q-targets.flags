@@ -2,3 +2,5 @@
 # flags for targets SB
 #
 #
+antenna='7' spw='2~17'
+antenna='11' spw='34~49'
