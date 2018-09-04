@@ -1,3 +1,28 @@
 #
 # flags for Band Pass calibrator SB 
 #
+antenna='1' spw='8~15'
+antenna='6' timerange='6:00:00~6:02:50' correlation='RR' spw='0~7'
+antenna='10' timerange='6:00:00~6:02:50' spw='8~15'
+antenna='11' spw='9'
+antenna='12' spw='10:15,11:0'
+antenna='13' spw='10' correlation='LL'
+antenna='13' spw='8:15,9,10:15,11:0~2'
+#
+spw='0:0~2'
+spw='1:0'
+spw='7:1'
+spw='7:14~15'
+spw='8:0~2'
+spw='9:8~11' antenna='4'
+spw='9:9~11,9:14' antenna='7'
+spw='9:9~11' antenna='9' correlation='RR'
+spw='9:8~11' antenna='11'
+spw='9:8~12' antenna='12' correlation='LL'
+spw='10:15' correlation='RR' antenna='4,9,16'
+spw='11:0~1' antenna='4,7,9,23'
+spw='11:2' antenna='4,23'
+spw='11:1' antenna='16'
+spw='11~14' correlation='LL' antenna='0'
+spw='12~14' correlation='LL' antenna='4'
+spw='15:14~15'
