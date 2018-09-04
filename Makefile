@@ -14,7 +14,7 @@ PRJ_NAME=EVLA-IRAS_05327+3404
 SNAME=iras_05327+3404
 BANDS = X K Q C
 #
-##-- end project info --------------------------------------------------
+##-- End of project info --------------------------------------------------
 
 ##-- Directory set-up --------------------------------------------------
 #
@@ -55,8 +55,7 @@ CALIB_SCRIPT=calib_evla.py
 #
 RUNOPT="unattended"
 
-#-- define templates ---------------------------------------------------
-
+##-- Template definition -----------------------------------------------
 
 # template to define the rules to unpack the data files in the reductions
 # directory and also to delete the given band reduction directory
@@ -163,9 +162,9 @@ savesplits-$(1): splits-$(1)
 endef
 
 
-#-- end definition of templates ----------------------------------------
+##-- End of template definition ----------------------------------------
 
-#-- definition of groups of tasks --------------------------------------
+##-- Definition of groups of tasks -------------------------------------
 
 unpack_list =
 cleanpack_list=
@@ -197,8 +196,9 @@ $(foreach band, $(BANDS), \
     $(eval savesplits_list += $(addsuffix $(band),savesplits-)) \
 )
 
-#-- End of definition of group of tasks --------------------------------
+##-- End of definition of group of tasks -------------------------------
 
+##-- Rules -------------------------------------------------------------
 
 export
 
@@ -219,7 +219,7 @@ saveall: saveinfo savecalinfo savesplits
 unpack: $(unpack_list)
 
 
-cleanpack : $(cleanpack_list)
+cleanpack: $(cleanpack_list)
 
 
 info: $(info_list)
@@ -279,3 +279,5 @@ clean: clean_reduction
 clean_reduction:
 	(cd reduction && rm -Rf band*)
 	rm -Rf reduction
+
+##-- End ---------------------------------------------------------------
