@@ -1,3 +1,10 @@
 #
 # flags for gain cal. SB 
 #
+spw='24:0'
+antenna='7' spw='2~17'
+antenna='11' spw='34~49'
+antenna='18' spw='34~49' timerange='8:11:00~8:14:00'
+antenna='19' spw='41~49' timerange='8:32:00~8:35:00'
+antenna='24' spw='38~44' timerange='8:32:00~8:35:00'
+antenna='25' spw='18~65' timerange='8:32:00~8:35:00'
