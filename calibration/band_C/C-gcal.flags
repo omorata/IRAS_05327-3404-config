@@ -2,6 +2,7 @@
 # flags for gain cal. SB 
 #
 antenna='0' correlation='LL' spw='15:12~14'
+antenna='0' spw='15:12~13'
 antenna='1' spw='15:12~14'
 antenna='1' spw='8~15'
 antenna='4' spw='9:8~15,10:0,10:14~15,11:0~2'
